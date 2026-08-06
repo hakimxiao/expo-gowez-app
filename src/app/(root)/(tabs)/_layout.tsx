@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { Image, ImageSourcePropType, Platform, View } from "react-native";
+import { Image, ImageSourcePropType, View } from "react-native";
 
 import { icons } from "@/constants";
 
@@ -20,7 +20,7 @@ const TabIcon = ({
         source={source}
         tintColor="white"
         resizeMode="contain"
-        className="size-7"
+        className="w-7 h-7"
       />
     </View>
   </View>
@@ -29,15 +29,15 @@ const TabIcon = ({
 export default function Layout() {
   return (
     <Tabs
-      initialRouteName="index"
+      initialRouteName="home"
       screenOptions={{
         tabBarActiveTintColor: "white",
         tabBarInactiveTintColor: "white",
         tabBarShowLabel: false,
         tabBarStyle: {
-          backgroundColor: "#643535",
+          backgroundColor: "#333333",
           borderRadius: 50,
-          paddingBottom: Platform.OS === "ios" ? 0 : 10,
+          paddingBottom: 0, // ios only
           overflow: "hidden",
           marginHorizontal: 20,
           marginBottom: 20,
