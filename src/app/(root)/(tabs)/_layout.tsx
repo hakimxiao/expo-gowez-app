@@ -1,7 +1,21 @@
 import { Tabs } from "expo-router";
-import { Image, ImageSourcePropType, View } from "react-native";
+import type { ReactNode } from "react";
+import {
+  AccessibilityState,
+  GestureResponderEvent,
+  Image,
+  ImageSourcePropType,
+  Platform,
+  Pressable,
+  StyleProp,
+  View,
+  ViewStyle,
+} from "react-native";
 
 import { icons } from "@/constants";
+
+const TAB_BAR_HEIGHT = 78;
+const RIPPLE_RADIUS = 28;
 
 const TabIcon = ({
   source,
@@ -10,9 +24,7 @@ const TabIcon = ({
   source: ImageSourcePropType;
   focused: boolean;
 }) => (
-  <View
-    className={`flex flex-row justify-center items-center rounded-full ${focused ? "bg-general-300" : ""}`}
-  >
+  <View className={`flex flex-row justify-center items-center rounded-full`}>
     <View
       className={`rounded-full w-12 h-12 items-center justify-center ${focused ? "bg-general-400" : ""}`}
     >
@@ -26,6 +38,51 @@ const TabIcon = ({
   </View>
 );
 
+type TabBarButtonProps = {
+  onPress?: ((e: GestureResponderEvent) => void) | null;
+  onLongPress?: ((e: GestureResponderEvent) => void) | null;
+  accessibilityState?: AccessibilityState;
+  accessibilityLabel?: string;
+  testID?: string;
+  style?: StyleProp<ViewStyle>;
+  children?: ReactNode;
+};
+
+const TabBarButton = ({
+  onPress,
+  onLongPress,
+  accessibilityState,
+  accessibilityLabel,
+  testID,
+  style: styleProp,
+  children,
+}: TabBarButtonProps) => (
+  <Pressable
+    onPress={onPress ?? undefined}
+    onLongPress={onLongPress ?? undefined}
+    accessibilityRole="button"
+    accessibilityState={accessibilityState}
+    accessibilityLabel={accessibilityLabel}
+    testID={testID}
+    android_ripple={{
+      color: "rgba(255,255,255,0.15)",
+      borderless: true,
+      radius: RIPPLE_RADIUS,
+    }}
+    style={({ pressed }) => [
+      styleProp,
+      {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+      },
+      Platform.OS === "ios" && pressed ? { opacity: 0.6 } : null,
+    ]}
+  >
+    {children}
+  </Pressable>
+);
+
 export default function Layout() {
   return (
     <Tabs
@@ -34,19 +91,43 @@ export default function Layout() {
         tabBarActiveTintColor: "white",
         tabBarInactiveTintColor: "white",
         tabBarShowLabel: false,
+        tabBarButton: (props) => (
+          <TabBarButton
+            onPress={props.onPress}
+            onLongPress={props.onLongPress}
+            accessibilityState={props.accessibilityState}
+            accessibilityLabel={props.accessibilityLabel}
+            testID={props.testID}
+            style={props.style}
+          >
+            {props.children}
+          </TabBarButton>
+        ),
+        tabBarItemStyle: {
+          paddingVertical: 0,
+          alignItems: "center",
+          justifyContent: "center",
+        },
         tabBarStyle: {
           backgroundColor: "#333333",
           borderRadius: 50,
-          paddingBottom: 0, // ios only
           overflow: "hidden",
           marginHorizontal: 20,
           marginBottom: 20,
-          height: 78,
+          height: TAB_BAR_HEIGHT,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           flexDirection: "row",
           position: "absolute",
+          paddingTop: 0,
+          paddingBottom: 0,
+          borderTopWidth: 0,
+
+          ...Platform.select({
+            android: { elevation: 0 },
+            ios: { shadowOpacity: 0 },
+          }),
         },
       }}
     >
