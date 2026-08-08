@@ -98,3 +98,113 @@ export const onboarding = [
 export const data = {
   onboarding,
 };
+
+export const recentRides = [
+  {
+    ride_id: "1",
+    origin_address: "Palembang, Sumatera Selatan",
+    destination_address: "Indralaya, Sumatera Selatan",
+    origin_latitude: "-2.976074",
+    origin_longitude: "104.775429",
+    destination_latitude: "-3.241838",
+    destination_longitude: "104.647472",
+    ride_time: 82,
+    fare_price: "45000.00",
+    payment_status: "paid",
+    driver_id: 2,
+    user_id: "1",
+    created_at: "2026-08-08 05:19:20.620007",
+    driver: {
+      driver_id: "2",
+      first_name: "Andi",
+      last_name: "Pratama",
+      profile_image_url:
+        "https://ucarecdn.com/6ea6d83d-ef1a-483f-9106-837a3a5b3f67/-/preview/1000x666/",
+      car_image_url:
+        "https://ucarecdn.com/a3872f80-c094-409c-82f8-c9ff38429327/-/preview/930x932/",
+      car_seats: 5,
+      rating: "4.60",
+    },
+  },
+
+  {
+    ride_id: "2",
+    origin_address: "Palembang, Sumatera Selatan",
+    destination_address: "Banyuasin, Sumatera Selatan",
+    origin_latitude: "-2.976074",
+    origin_longitude: "104.775429",
+    destination_latitude: "-2.890833",
+    destination_longitude: "104.702222",
+    ride_time: 95,
+    fare_price: "55000.00",
+    payment_status: "paid",
+    driver_id: 1,
+    user_id: "1",
+    created_at: "2026-08-08 06:12:17.683046",
+    driver: {
+      driver_id: "1",
+      first_name: "Budi",
+      last_name: "Santoso",
+      profile_image_url:
+        "https://ucarecdn.com/dae59f69-2c1f-48c3-a883-017bcf0f9950/-/preview/1000x666/",
+      car_image_url:
+        "https://ucarecdn.com/a2dc52b2-8bf7-4e49-9a36-3ffb5229ed02/-/preview/465x466/",
+      car_seats: 4,
+      rating: "4.80",
+    },
+  },
+
+  {
+    ride_id: "3",
+    origin_address: "Jakarta, Indonesia",
+    destination_address: "Bogor, Jawa Barat",
+    origin_latitude: "-6.208763",
+    origin_longitude: "106.845599",
+    destination_latitude: "-6.597147",
+    destination_longitude: "106.806039",
+    ride_time: 91,
+    fare_price: "75000.00",
+    payment_status: "paid",
+    driver_id: 1,
+    user_id: "1",
+    created_at: "2026-08-08 08:49:01.809053",
+    driver: {
+      driver_id: "1",
+      first_name: "Budi",
+      last_name: "Santoso",
+      profile_image_url:
+        "https://ucarecdn.com/dae59f69-2c1f-48c3-a883-017bcf0f9950/-/preview/1000x666/",
+      car_image_url:
+        "https://ucarecdn.com/a2dc52b2-8bf7-4e49-9a36-3ffb5229ed02/-/preview/465x466/",
+      car_seats: 4,
+      rating: "4.80",
+    },
+  },
+
+  {
+    ride_id: "4",
+    origin_address: "Bandung, Jawa Barat",
+    destination_address: "Cimahi, Jawa Barat",
+    origin_latitude: "-6.917464",
+    origin_longitude: "107.619123",
+    destination_latitude: "-6.872222",
+    destination_longitude: "107.5425",
+    ride_time: 47,
+    fare_price: "35000.00",
+    payment_status: "paid",
+    driver_id: 3,
+    user_id: "1",
+    created_at: "2026-08-08 18:43:54.297838",
+    driver: {
+      driver_id: "3",
+      first_name: "Rizky",
+      last_name: "Kurniawan",
+      profile_image_url:
+        "https://ucarecdn.com/0330d85c-232e-4c30-bd04-e5e4d0e3d688/-/preview/826x822/",
+      car_image_url:
+        "https://ucarecdn.com/289764fb-55b6-4427-b1d1-f655987b4a14/-/preview/930x932/",
+      car_seats: 4,
+      rating: "4.70",
+    },
+  },
+];
