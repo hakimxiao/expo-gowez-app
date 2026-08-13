@@ -2,17 +2,50 @@ import EmptyRecentRidesList from "@/components/home/EmptyRecentRidesList";
 import FlatListHeader from "@/components/home/FlatListHeader";
 import RideCard from "@/components/home/RideCard";
 import { recentRides } from "@/constants";
+import { useLocationStore } from "@/store";
 import { useUser } from "@clerk/expo";
+import * as Location from "expo-location";
+import { useEffect, useState } from "react";
 import { FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Home = () => {
+  const { setUserLocation, setDestinationLocation } = useLocationStore();
+
   const { user } = useUser();
   const loading = false;
+
+  const [hasPermisssion, setHasPermisssion] = useState(false);
 
   const handleSignOut = () => {};
 
   const handleDestinationPress = () => {};
+
+  useEffect(() => {
+    const requestLocation = async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        setHasPermisssion(false);
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync();
+
+      const address = await Location.reverseGeocodeAsync({
+        latitude: location.coords?.latitude!,
+        longitude: location.coords?.longitude!,
+      });
+
+      setUserLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        address: `${address[0].name}, ${address[0].region}`,
+      });
+    };
+
+    requestLocation();
+  }, []);
 
   return (
     <SafeAreaView className="bg-general-500">
