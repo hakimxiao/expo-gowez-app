@@ -35,12 +35,13 @@ export const calculateRegion = ({
   destinationLatitude?: number | null;
   destinationLongitude?: number | null;
 }) => {
+  // Default Region: Palembang / Sumatera Selatan jika lokasi belum terbaca
   if (!userLatitude || !userLongitude) {
     return {
-      latitude: 37.78825,
-      longitude: -122.4324,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
+      latitude: -2.9761,
+      longitude: 104.7754,
+      latitudeDelta: 0.05,
+      longitudeDelta: 0.05,
     };
   }
 
@@ -48,8 +49,8 @@ export const calculateRegion = ({
     return {
       latitude: userLatitude,
       longitude: userLongitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
+      latitudeDelta: 0.02,
+      longitudeDelta: 0.02,
     };
   }
 

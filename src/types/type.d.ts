@@ -78,6 +78,8 @@ declare interface GoogleInputProps {
   }) => void;
 }
 
+declare interface PlacesInputProps extends GoogleInputProps {}
+
 declare interface InputFieldProps extends TextInputProps {
   label: string;
   icon?: any;

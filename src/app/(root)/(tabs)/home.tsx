@@ -1,12 +1,13 @@
 import EmptyRecentRidesList from "@/components/home/EmptyRecentRidesList";
-import FlatListHeader from "@/components/home/FlatListHeader";
+import PlacesTextInput from "@/components/home/PlacesTextInput";
 import RideCard from "@/components/home/RideCard";
-import { recentRides } from "@/constants";
+import Map from "@/components/Map";
+import { icons, recentRides } from "@/constants";
 import { useLocationStore } from "@/store";
 import { useUser } from "@clerk/expo";
 import * as Location from "expo-location";
 import { useEffect, useState } from "react";
-import { FlatList } from "react-native";
+import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Home = () => {
@@ -57,11 +58,41 @@ const Home = () => {
         contentContainerStyle={{ paddingBottom: 100 }}
         ListEmptyComponent={() => <EmptyRecentRidesList isLoading={true} />}
         ListHeaderComponent={() => (
-          <FlatListHeader
-            user={user}
-            handleSignOut={handleSignOut}
-            handleDestinationPress={handleDestinationPress}
-          />
+          <>
+            <View className="flex flex-row items-center justify-between my-5">
+              <Text className="text-xl font-JakartaExtraBold">
+                Welcome{", "}
+                {user?.firstName ||
+                  user?.emailAddresses[0].emailAddress.split("@")[0]}{" "}
+                👋
+              </Text>
+              <TouchableOpacity
+                onPress={handleSignOut}
+                className="justify-center items-center size-10 rounded-full bg-white"
+              >
+                <Image source={icons.out} className="size-4" />
+              </TouchableOpacity>
+            </View>
+
+            <PlacesTextInput
+              icon={icons.search}
+              containerStyle="bg-white shadow-md shadow-neutral-300"
+              handlePress={handleDestinationPress}
+            />
+
+            <>
+              <Text className="text-xl font-JakartaBold mt-5 mb-3">
+                Your current location
+              </Text>
+              <View className="flex flex-row items-center bg-transparent h-[300px]">
+                <Map />
+              </View>
+            </>
+
+            <Text className="text-xl font-JakartaBold mt-5 mb-3">
+              Recent Rides
+            </Text>
+          </>
         )}
       />
     </SafeAreaView>

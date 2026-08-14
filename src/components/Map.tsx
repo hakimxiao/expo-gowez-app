@@ -48,6 +48,18 @@ const Map = () => {
       showsPointsOfInterests={false}
       showsUserLocation={true}
       userInterfaceStyle="light"
+      minZoomLevel={7}
+      maxZoomLevel={20}
+      cameraBoundary={{
+        northEast: {
+          latitude: -1.60,
+          longitude: 106.10,
+        },
+        southWest: {
+          latitude: -4.95,
+          longitude: 102.00,
+        },
+      }}
     >
       {markers.map((marker) => (
         <Marker
