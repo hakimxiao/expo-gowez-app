@@ -6,6 +6,7 @@ import { icons, recentRides } from "@/constants";
 import { useLocationStore } from "@/store";
 import { useUser } from "@clerk/expo";
 import * as Location from "expo-location";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -18,9 +19,15 @@ const Home = () => {
 
   const [hasPermisssion, setHasPermisssion] = useState(false);
 
-  const handleSignOut = () => {};
+  const handleSignOut = () => {
 
-  const handleDestinationPress = () => {};
+  };
+
+  const handleDestinationPress = (location: {latitude: number, longitude: number, address: string}) => {
+    setDestinationLocation(location);
+
+    router.push('/(root)/find-ride');
+  };
 
   useEffect(() => {
     const requestLocation = async () => {

@@ -5,6 +5,7 @@
   "dependencies": {
     "@clerk/expo": "^4.2.0",
     "@expo/ui": "~57.0.8",
+    "@gorhom/bottom-sheet": "^5.2.14",
     "@neondatabase/serverless": "^1.1.0",
     "@react-navigation/bottom-tabs": "^7.18.15",
     "babel-preset-expo": "^57.0.5",
