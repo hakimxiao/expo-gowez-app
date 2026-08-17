@@ -25,6 +25,8 @@ const Map = () => {
   });
 
   useEffect(() => {
+    setDrivers(drivers);
+
     if (Array.isArray(drivers)) {
       if (!userLatitude || !userLongitude) return;
 
@@ -52,12 +54,12 @@ const Map = () => {
       maxZoomLevel={20}
       cameraBoundary={{
         northEast: {
-          latitude: -1.60,
-          longitude: 106.10,
+          latitude: -1.6,
+          longitude: 106.1,
         },
         southWest: {
           latitude: -4.95,
-          longitude: 102.00,
+          longitude: 102.0,
         },
       }}
     >
