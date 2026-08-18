@@ -1,6 +1,36 @@
 import { Driver, MarkerData } from "@/types/type";
 
-const directionsAPI = process.env.EXPO_PUBLIC_DIRECTIONS_API_KEY;
+const AVERAGE_DRIVER_SPEED_KMH = 28;
+const BASE_FARE = 15000;
+const PER_MINUTE_RATE = 2500;
+
+const estimateTravelMinutes = (
+  originLatitude: number,
+  originLongitude: number,
+  destinationLatitude: number,
+  destinationLongitude: number,
+) => {
+  const toRadians = (value: number) => (value * Math.PI) / 180;
+  const earthRadiusKm = 6371;
+  const latDistance = toRadians(destinationLatitude - originLatitude);
+  const lngDistance = toRadians(destinationLongitude - originLongitude);
+
+  const originLatRad = toRadians(originLatitude);
+  const destinationLatRad = toRadians(destinationLatitude);
+  const haversine =
+    Math.sin(latDistance / 2) * Math.sin(latDistance / 2) +
+    Math.cos(originLatRad) *
+      Math.cos(destinationLatRad) *
+      Math.sin(lngDistance / 2) *
+      Math.sin(lngDistance / 2);
+
+  const distanceKm =
+    earthRadiusKm *
+    2 *
+    Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+
+  return Math.max(1, (distanceKm / AVERAGE_DRIVER_SPEED_KMH) * 60);
+};
 
 export const generateMarkersFromData = ({
   data,
@@ -12,14 +42,17 @@ export const generateMarkersFromData = ({
   userLongitude: number;
 }): MarkerData[] => {
   return data.map((driver) => {
-    const latOffset = (Math.random() - 0.5) * 0.01; // Random offset between -0.005 and 0.005
-    const lngOffset = (Math.random() - 0.5) * 0.01; // Random offset between -0.005 and 0.005
+    const latOffset = (Math.random() - 0.5) * 0.01;
+    const lngOffset = (Math.random() - 0.5) * 0.01;
 
     return {
+      ...driver,
       latitude: userLatitude + latOffset,
       longitude: userLongitude + lngOffset,
       title: `${driver.first_name} ${driver.last_name}`,
-      ...driver,
+      id: driver.id ?? driver.driver_id ?? Math.floor(Math.random() * 1000),
+      price: driver.price ? String(driver.price) : "45000",
+      time: driver.time ?? 15,
     };
   });
 };
@@ -59,8 +92,8 @@ export const calculateRegion = ({
   const minLng = Math.min(userLongitude, destinationLongitude);
   const maxLng = Math.max(userLongitude, destinationLongitude);
 
-  const latitudeDelta = (maxLat - minLat) * 1.3; // Adding some padding
-  const longitudeDelta = (maxLng - minLng) * 1.3; // Adding some padding
+  const latitudeDelta = Math.max((maxLat - minLat) * 1.3, 0.02);
+  const longitudeDelta = Math.max((maxLng - minLng) * 1.3, 0.02);
 
   const latitude = (userLatitude + destinationLatitude) / 2;
   const longitude = (userLongitude + destinationLongitude) / 2;
@@ -91,32 +124,33 @@ export const calculateDriverTimes = async ({
     !userLongitude ||
     !destinationLatitude ||
     !destinationLongitude
-  )
-    return;
-
-  try {
-    const timesPromises = markers.map(async (marker) => {
-      const responseToUser = await fetch(
-        `https://maps.googleapis.com/maps/api/directions/json?origin=${marker.latitude},${marker.longitude}&destination=${userLatitude},${userLongitude}&key=${directionsAPI}`,
-      );
-      const dataToUser = await responseToUser.json();
-      const timeToUser = dataToUser.routes[0].legs[0].duration.value; // Time in seconds
-
-      const responseToDestination = await fetch(
-        `https://maps.googleapis.com/maps/api/directions/json?origin=${userLatitude},${userLongitude}&destination=${destinationLatitude},${destinationLongitude}&key=${directionsAPI}`,
-      );
-      const dataToDestination = await responseToDestination.json();
-      const timeToDestination =
-        dataToDestination.routes[0].legs[0].duration.value; // Time in seconds
-
-      const totalTime = (timeToUser + timeToDestination) / 60; // Total time in minutes
-      const price = (totalTime * 0.5).toFixed(2); // Calculate price based on time
-
-      return { ...marker, time: totalTime, price };
-    });
-
-    return await Promise.all(timesPromises);
-  } catch (error) {
-    console.error("Error calculating driver times:", error);
+  ) {
+    return markers;
   }
+
+  const drivers = markers.map((marker) => {
+    const timeToUser = estimateTravelMinutes(
+      marker.latitude,
+      marker.longitude,
+      userLatitude,
+      userLongitude,
+    );
+    const timeToDestination = estimateTravelMinutes(
+      userLatitude,
+      userLongitude,
+      destinationLatitude,
+      destinationLongitude,
+    );
+    const totalTime = Math.ceil(timeToUser + timeToDestination);
+    const calculatedPrice =
+      Math.round((BASE_FARE + totalTime * PER_MINUTE_RATE) / 1000) * 1000;
+
+    return {
+      ...marker,
+      time: totalTime,
+      price: String(calculatedPrice),
+    };
+  });
+
+  return drivers.sort((a, b) => (a.time ?? 0) - (b.time ?? 0));
 };

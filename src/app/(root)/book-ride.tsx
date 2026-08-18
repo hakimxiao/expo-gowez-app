@@ -1,22 +1,73 @@
 import Payment from "@/components/Payment";
 import RideLayout from "@/components/RideLayout";
 import { icons } from "@/constants";
-import { formatTime } from "@/lib/utils";
+import { getCurrentUserLocation } from "@/lib/location";
+import { formatCurrency, formatTime } from "@/lib/utils";
 import { useDriverStore, useLocationStore } from "@/store";
 import { useUser } from "@clerk/expo";
-import { Image, Text, View } from "react-native";
+import { useEffect } from "react";
+import { Alert, Image, Text, View } from "react-native";
 
 const BookRide = () => {
   const { user } = useUser();
-  const { userAddress, destinationAddress } = useLocationStore();
+  const { userAddress, destinationAddress, setUserLocation } =
+    useLocationStore();
   const { drivers, selectedDriver } = useDriverStore();
 
-  const driverDetails = drivers?.filter(
-    (driver) => +driver.id === selectedDriver,
-  )[0];
+  const driverDetails =
+    drivers?.find((driver) => Number(driver.id) === selectedDriver) ||
+    drivers?.[0];
+
+  const parsedPrice = Number(driverDetails?.price ?? 0);
+  const rideAmount =
+    !isNaN(parsedPrice) && parsedPrice > 0 ? Math.round(parsedPrice) : 45000;
+
+  const customerName =
+    user?.fullName ||
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+    "Pengguna Gowez";
+
+  const customerEmail =
+    user?.primaryEmailAddress?.emailAddress || "user@gowez.com";
+
+  const handlePaymentSuccess = (orderId: string) => {
+    // TODO: Simpan ride user setelah pembayaran sukses lewat POST "/(api)/ride/create".
+    // Payload yang dibutuhkan: origin/destination address, lat/lng, ride_time,
+    // fare_price, payment_status: "paid", driver_id, user_id, dan jika schema
+    // database sudah mendukung, simpan juga orderId sebagai payment_id.
+    console.log("[BookRide] Payment success, ready to create ride:", orderId);
+  };
+
+  useEffect(() => {
+    if (userAddress) return;
+
+    let isMounted = true;
+
+    const loadCurrentLocation = async () => {
+      try {
+        const location = await getCurrentUserLocation();
+        if (isMounted) setUserLocation(location);
+      } catch (error) {
+        if (!isMounted) return;
+
+        Alert.alert(
+          "Lokasi Penjemputan Kosong",
+          error instanceof Error
+            ? error.message
+            : "Kami belum bisa membaca lokasi Anda. Aktifkan GPS atau pilih lokasi penjemputan secara manual.",
+        );
+      }
+    };
+
+    loadCurrentLocation();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [setUserLocation, userAddress]);
 
   return (
-    <RideLayout title="Book Ride">
+    <RideLayout title="Book Ride" snapPoints={["70%", "92%"]}>
       <>
         <Text className="text-xl font-JakartaSemiBold mb-3">
           Ride Information
@@ -40,7 +91,7 @@ const BookRide = () => {
                 resizeMode="contain"
               />
               <Text className="text-lg font-JakartaRegular">
-                {driverDetails?.rating}
+                {driverDetails?.rating ?? "4.8"}
               </Text>
             </View>
           </View>
@@ -49,43 +100,66 @@ const BookRide = () => {
         <View className="flex flex-col w-full items-start justify-center py-3 px-5 rounded-3xl bg-general-600 mt-5">
           <View className="flex flex-row items-center justify-between w-full border-b border-white py-3">
             <Text className="text-lg font-JakartaRegular">Ride Price</Text>
-            <Text className="text-lg font-JakartaRegular text-[#0CC25F]">
-              ${driverDetails?.price}
+            <Text className="text-lg font-JakartaSemiBold text-[#0CC25F]">
+              {formatCurrency(rideAmount)}
             </Text>
           </View>
 
           <View className="flex flex-row items-center justify-between w-full border-b border-white py-3">
             <Text className="text-lg font-JakartaRegular">Pickup Time</Text>
             <Text className="text-lg font-JakartaRegular">
-              {formatTime(driverDetails?.time!) || 5}
+              {formatTime(driverDetails?.time ?? 15)}
             </Text>
           </View>
 
           <View className="flex flex-row items-center justify-between w-full py-3">
             <Text className="text-lg font-JakartaRegular">Car Seats</Text>
             <Text className="text-lg font-JakartaRegular">
-              {driverDetails?.car_seats}
+              {driverDetails?.car_seats ?? 4}
             </Text>
           </View>
         </View>
 
-        <View className="flex flex-col w-full items-start justify-center mt-5">
-          <View className="flex flex-row items-center justify-start mt-3 border-t border-b border-general-700 w-full py-3">
-            <Image source={icons.to} className="w-6 h-6" />
-            <Text className="text-lg font-JakartaRegular ml-2">
-              {userAddress}
-            </Text>
+        <View className="flex w-full flex-col items-start justify-center mt-5 gap-y-3">
+          <View className="min-h-[76px] w-full flex-row items-start rounded-2xl bg-neutral-100 px-4 py-4">
+            <Image source={icons.to} className="mt-1 h-6 w-6" />
+            <View className="ml-3 flex-1">
+              <Text className="text-xs font-JakartaMedium text-general-800">
+                Pickup
+              </Text>
+              <Text
+                className="mt-1 text-base leading-5 font-JakartaSemiBold text-neutral-800"
+                numberOfLines={3}
+              >
+                {userAddress || "Lokasi Penjemputan"}
+              </Text>
+            </View>
           </View>
 
-          <View className="flex flex-row items-center justify-start border-b border-general-700 w-full py-3">
-            <Image source={icons.point} className="w-6 h-6" />
-            <Text className="text-lg font-JakartaRegular ml-2">
-              {destinationAddress}
-            </Text>
+          <View className="min-h-[76px] w-full flex-row items-start rounded-2xl bg-neutral-100 px-4 py-4">
+            <Image source={icons.point} className="mt-1 h-6 w-6" />
+            <View className="ml-3 flex-1">
+              <Text className="text-xs font-JakartaMedium text-general-800">
+                Destination
+              </Text>
+              <Text
+                className="mt-1 text-base leading-5 font-JakartaSemiBold text-neutral-800"
+                numberOfLines={3}
+              >
+                {destinationAddress || "Lokasi Tujuan"}
+              </Text>
+            </View>
           </View>
         </View>
 
-        <Payment />
+        <Payment
+          amount={rideAmount}
+          customerName={customerName}
+          customerEmail={customerEmail}
+          driverId={driverDetails?.id ? Number(driverDetails.id) : undefined}
+          rideTime={driverDetails?.time}
+          onSuccess={handlePaymentSuccess}
+        />
       </>
     </RideLayout>
   );

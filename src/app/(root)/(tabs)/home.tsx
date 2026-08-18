@@ -3,12 +3,19 @@ import PlacesTextInput from "@/components/home/PlacesTextInput";
 import RideCard from "@/components/home/RideCard";
 import Map from "@/components/Map";
 import { icons, recentRides } from "@/constants";
+import { getCurrentUserLocation } from "@/lib/location";
 import { useLocationStore } from "@/store";
 import { useUser } from "@clerk/expo";
-import * as Location from "expo-location";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
+import { useEffect } from "react";
+import {
+  Alert,
+  FlatList,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Home = () => {
@@ -16,8 +23,6 @@ const Home = () => {
 
   const { user } = useUser();
   const loading = false;
-
-  const [hasPermisssion, setHasPermisssion] = useState(false);
 
   const handleSignOut = () => {
 
@@ -31,29 +36,21 @@ const Home = () => {
 
   useEffect(() => {
     const requestLocation = async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-
-      if (status !== "granted") {
-        setHasPermisssion(false);
-        return;
+      try {
+        const location = await getCurrentUserLocation();
+        setUserLocation(location);
+      } catch (error) {
+        Alert.alert(
+          "Lokasi Tidak Terdeteksi",
+          error instanceof Error
+            ? error.message
+            : "Kami belum bisa membaca lokasi Anda. Pastikan GPS aktif lalu coba lagi.",
+        );
       }
-
-      let location = await Location.getCurrentPositionAsync();
-
-      const address = await Location.reverseGeocodeAsync({
-        latitude: location.coords?.latitude!,
-        longitude: location.coords?.longitude!,
-      });
-
-      setUserLocation({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        address: `${address[0].name}, ${address[0].region}`,
-      });
     };
 
     requestLocation();
-  }, []);
+  }, [setUserLocation]);
 
   return (
     <SafeAreaView className="bg-general-500">

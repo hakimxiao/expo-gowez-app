@@ -29,14 +29,22 @@ const PlacesTextInput = ({
   icon,
   initialLocation,
   containerStyle,
+  inputContainerStyle,
+  inputStyle,
+  multilineInput,
+  inputNumberOfLines,
+  autoGrowInput,
+  minInputHeight = 44,
+  maxInputHeight = 120,
   textInputBackgroundColor,
   handlePress,
 }: PlacesInputProps) => {
   const [query, setQuery] = useState("");
+  const [inputHeight, setInputHeight] = useState(minInputHeight);
   const [results, setResults] = useState<NominatimPlace[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!query || query.trim().length < 2) {
@@ -100,8 +108,11 @@ const PlacesTextInput = ({
     <View className={`relative z-50 mb-5 ${containerStyle}`}>
       {/* Search Input Bar */}
       <View
-        className="flex flex-row items-center px-4 py-3 rounded-full"
-        style={{ backgroundColor: textInputBackgroundColor || "white" }}
+        className={`flex flex-row items-center px-4 py-3 rounded-full ${inputContainerStyle}`}
+        style={{
+          backgroundColor: textInputBackgroundColor || "white",
+          ...(autoGrowInput ? { minHeight: inputHeight + 24 } : {}),
+        }}
       >
         <Image
           source={icon ? (typeof icon === "string" ? { uri: icon } : icon) : icons.search}
@@ -118,9 +129,29 @@ const PlacesTextInput = ({
           onFocus={() => {
             if (results.length > 0) setShowResults(true);
           }}
+          multiline={multilineInput}
+          numberOfLines={inputNumberOfLines}
+          scrollEnabled={autoGrowInput ? inputHeight >= maxInputHeight : undefined}
+          onContentSizeChange={(event) => {
+            if (!autoGrowInput) return;
+
+            const nextHeight = Math.min(
+              Math.max(event.nativeEvent.contentSize.height, minInputHeight),
+              maxInputHeight,
+            );
+            setInputHeight(nextHeight);
+          }}
           placeholder={initialLocation ?? "Cari lokasi di Sumatera Selatan..."}
           placeholderTextColor="gray"
-          className="flex-1 text-base font-semibold text-neutral-800 p-0"
+          className={`flex-1 text-base font-semibold text-neutral-800 p-0 ${inputStyle}`}
+          style={
+            multilineInput
+              ? {
+                  height: autoGrowInput ? inputHeight : undefined,
+                  textAlignVertical: "top",
+                }
+              : undefined
+          }
         />
 
         {isLoading ? (

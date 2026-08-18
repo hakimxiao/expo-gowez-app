@@ -46,3 +46,11 @@ export function formatDate(dateString: string): string {
 
   return `${day < 10 ? "0" + day : day} ${month} ${year}`;
 }
+
+export function formatCurrency(amount: number | string | null | undefined): string {
+  const numericAmount = typeof amount === "string" ? parseFloat(amount) : Number(amount ?? 0);
+  if (isNaN(numericAmount)) {
+    return "Rp 0";
+  }
+  return `Rp ${Math.round(numericAmount).toLocaleString("id-ID")}`;
+}

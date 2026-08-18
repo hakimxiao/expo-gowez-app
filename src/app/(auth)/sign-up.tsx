@@ -6,8 +6,17 @@ import { fetchAPI } from "@/lib/fetch";
 import { useSignUp } from "@clerk/expo";
 import { Link, router } from "expo-router";
 import { useState } from "react";
-import { Alert, Image, ScrollView, Text, View } from "react-native";
+import {
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { ReactNativeModal } from "react-native-modal";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignUpScreen() {
   const { signUp } = useSignUp();
@@ -60,6 +69,17 @@ export default function SignUpScreen() {
 
   const onPressVerify = async () => {
     if (!signUp) return;
+
+    if (!verification.code.trim()) {
+      const errorMessage = "Masukkan kode verifikasi terlebih dahulu.";
+      setVerification({
+        ...verification,
+        error: errorMessage,
+        state: "failed",
+      });
+      Alert.alert("Kode Verifikasi Kosong", errorMessage);
+      return;
+    }
 
     try {
       await signUp.verifications.verifyEmailCode({
@@ -168,42 +188,56 @@ export default function SignUpScreen() {
 
         {/* Verification Modal */}
         <ReactNativeModal
-          isVisible={verification.state === "pending"}
+          isVisible={
+            verification.state === "pending" || verification.state === "failed"
+          }
+          avoidKeyboard
           onModalHide={() => {
             if (verification.state === "success") setShowSuccessModal(true);
           }}
         >
-          <View className="bg-white px-7 py-9 rounded-2xl min-h-[300px]">
-            <Text className="text-2xl font-JakartaExtraBold mb-2">
-              Verification
-            </Text>
-            <Text className="font-Jakarta mb-5">
-              We've sent a verification code {form.email}
-            </Text>
+          <SafeAreaView edges={["top", "bottom"]}>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
+              <View className="bg-white px-7 py-9 rounded-2xl min-h-[300px]">
+                <Text className="text-2xl font-JakartaExtraBold mb-2">
+                  Verification
+                </Text>
+                <Text className="font-Jakarta mb-5">
+                  We've sent a verification code to {form.email}
+                </Text>
 
-            <InputField
-              label="Code"
-              icon={icons.lock}
-              placeholder="12345"
-              value={verification.code}
-              keyboardType="numeric"
-              onChangeText={(code) =>
-                setVerification({ ...verification, code })
-              }
-            />
+                <InputField
+                  label="Code"
+                  icon={icons.lock}
+                  placeholder="12345"
+                  value={verification.code}
+                  keyboardType="numeric"
+                  onChangeText={(code) =>
+                    setVerification({
+                      ...verification,
+                      code,
+                      error: "",
+                      state: "pending",
+                    })
+                  }
+                />
 
-            {verification.error && (
-              <Text className="text-red-500 text-sm mt-1">
-                {verification.error}
-              </Text>
-            )}
+                {verification.error && (
+                  <Text className="text-red-500 text-sm mt-1">
+                    {verification.error}
+                  </Text>
+                )}
 
-            <CustomButton
-              title="Verify Email"
-              onPress={onPressVerify}
-              className="mt-5 bg-success-500"
-            />
-          </View>
+                <CustomButton
+                  title="Verify Email"
+                  onPress={onPressVerify}
+                  className="mt-5 bg-success-500"
+                />
+              </View>
+            </KeyboardAvoidingView>
+          </SafeAreaView>
         </ReactNativeModal>
 
         <ReactNativeModal isVisible={showSuccessModal}>

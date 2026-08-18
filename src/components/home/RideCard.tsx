@@ -1,5 +1,5 @@
 import { icons } from "@/constants";
-import { formatDate, formatTime } from "@/lib/utils";
+import { formatCurrency, formatDate, formatTime } from "@/lib/utils";
 import { Ride } from "@/types/type";
 import { Image, Text, View } from "react-native";
 
@@ -12,6 +12,7 @@ const RideCard = ({
     destination_address,
     created_at,
     ride_time,
+    fare_price,
     payment_status,
   },
 }: {
@@ -72,10 +73,19 @@ const RideCard = ({
 
           <View className="flex flex-row items-center w-full justify-between mb-5">
             <Text className="text-md font-JakartaMedium text-gray-500">
+              Fare Price
+            </Text>
+            <Text className="text-md font-JakartaSemiBold text-neutral-800">
+              {formatCurrency(fare_price || 45000)}
+            </Text>
+          </View>
+
+          <View className="flex flex-row items-center w-full justify-between mb-5">
+            <Text className="text-md font-JakartaMedium text-gray-500">
               Payment Status
             </Text>
             <Text
-              className={`text-md capitalize font-JakartaMedium text-gray-500 ${payment_status === "paid" ? "text-green-500" : "text-red-500"}`}
+              className={`text-md capitalize font-JakartaMedium ${payment_status === "paid" ? "text-green-500" : "text-red-500"}`}
             >
               {payment_status}
             </Text>

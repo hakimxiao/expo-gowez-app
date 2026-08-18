@@ -1,31 +1,34 @@
 import { TextInputProps, TouchableOpacityProps } from "react-native";
 
-declare interface Driver {
-  driver_id: number;
+export declare interface Driver {
+  id?: string | number;
+  driver_id?: number | string;
   first_name: string;
   last_name: string;
   profile_image_url: string;
   car_image_url: string;
   car_seats: number;
-  rating: number;
+  rating: number | string;
+  price?: string | number;
+  time?: number;
 }
 
-declare interface MarkerData {
+export declare interface MarkerData {
   latitude: number;
   longitude: number;
-  id: number;
+  id: number | string;
   title: string;
   profile_image_url: string;
   car_image_url: string;
   car_seats: number;
-  rating: number;
+  rating: number | string;
   first_name: string;
   last_name: string;
   time?: number;
-  price?: string;
+  price?: string | number;
 }
 
-declare interface MapProps {
+export declare interface MapProps {
   destinationLatitude?: number;
   destinationLongitude?: number;
   onDriverTimesCalculated?: (driversWithTimes: MarkerData[]) => void;
@@ -33,27 +36,33 @@ declare interface MapProps {
   onMapReady?: () => void;
 }
 
-declare interface Ride {
+export declare interface Ride {
+  ride_id?: string;
   origin_address: string;
   destination_address: string;
-  origin_latitude: number;
-  origin_longitude: number;
-  destination_latitude: number;
-  destination_longitude: number;
+  origin_latitude: number | string;
+  origin_longitude: number | string;
+  destination_latitude: number | string;
+  destination_longitude: number | string;
   ride_time: number;
-  fare_price: number;
+  fare_price: number | string;
   payment_status: string;
-  driver_id: number;
-  user_email: string;
+  driver_id: number | string;
+  user_id?: string;
+  user_email?: string;
   created_at: string;
   driver: {
+    driver_id?: number | string;
     first_name: string;
     last_name: string;
+    profile_image_url?: string;
+    car_image_url?: string;
     car_seats: number;
+    rating?: string | number;
   };
 }
 
-declare interface ButtonProps extends TouchableOpacityProps {
+export declare interface ButtonProps extends TouchableOpacityProps {
   title: string;
   bgVariant?: "primary" | "secondary" | "danger" | "outline" | "success";
   textVariant?: "primary" | "default" | "secondary" | "danger" | "success";
@@ -62,10 +71,17 @@ declare interface ButtonProps extends TouchableOpacityProps {
   className?: string;
 }
 
-declare interface GoogleInputProps {
-  icon?: string;
+export declare interface GoogleInputProps {
+  icon?: string | any;
   initialLocation?: string;
   containerStyle?: string;
+  inputContainerStyle?: string;
+  inputStyle?: string;
+  multilineInput?: boolean;
+  inputNumberOfLines?: number;
+  autoGrowInput?: boolean;
+  minInputHeight?: number;
+  maxInputHeight?: number;
   textInputBackgroundColor?: string;
   handlePress: ({
     latitude,
@@ -78,9 +94,9 @@ declare interface GoogleInputProps {
   }) => void;
 }
 
-declare interface PlacesInputProps extends GoogleInputProps {}
+export declare interface PlacesInputProps extends GoogleInputProps {}
 
-declare interface InputFieldProps extends TextInputProps {
+export declare interface InputFieldProps extends TextInputProps {
   label: string;
   icon?: any;
   secureTextEntry?: boolean;
@@ -91,15 +107,15 @@ declare interface InputFieldProps extends TextInputProps {
   className?: string;
 }
 
-declare interface PaymentProps {
-  fullName: string;
-  email: string;
-  amount: string;
-  driverId: number;
-  rideTime: number;
+export declare interface PaymentProps {
+  amount: number;
+  customerName: string;
+  customerEmail: string;
+  driverId?: number;
+  rideTime?: number;
 }
 
-declare interface LocationStore {
+export declare interface LocationStore {
   userLatitude: number | null;
   userLongitude: number | null;
   userAddress: string | null;
@@ -126,7 +142,7 @@ declare interface LocationStore {
   }) => void;
 }
 
-declare interface DriverStore {
+export declare interface DriverStore {
   drivers: MarkerData[];
   selectedDriver: number | null;
   setSelectedDriver: (driverId: number) => void;
@@ -134,7 +150,7 @@ declare interface DriverStore {
   clearSelectedDriver: () => void;
 }
 
-declare interface DriverCardProps {
+export declare interface DriverCardProps {
   item: MarkerData;
   selected: number;
   setSelected: () => void;

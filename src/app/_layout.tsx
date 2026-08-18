@@ -6,6 +6,10 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { Image, LogBox, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import {
+  initialWindowMetrics,
+  SafeAreaProvider,
+} from "react-native-safe-area-context";
 import "react-native-reanimated";
 
 import "../global.css";
@@ -99,9 +103,11 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-        <RootLayoutNav />
-      </ClerkProvider>
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+          <RootLayoutNav />
+        </ClerkProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
