@@ -50,6 +50,24 @@ export async function POST(request: Request) {
 
     const sql = neon(process.env.DATABASE_URL);
 
+    await sql`
+      CREATE TABLE IF NOT EXISTS rides (
+        ride_id SERIAL PRIMARY KEY,
+        origin_address TEXT NOT NULL,
+        destination_address TEXT NOT NULL,
+        origin_latitude DOUBLE PRECISION NOT NULL,
+        origin_longitude DOUBLE PRECISION NOT NULL,
+        destination_latitude DOUBLE PRECISION NOT NULL,
+        destination_longitude DOUBLE PRECISION NOT NULL,
+        ride_time INTEGER NOT NULL,
+        fare_price NUMERIC NOT NULL,
+        payment_status TEXT NOT NULL,
+        driver_id INTEGER NOT NULL,
+        user_id TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
     const response = await sql`
       INSERT INTO rides ( 
           origin_address, 

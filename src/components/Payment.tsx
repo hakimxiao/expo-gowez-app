@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -29,7 +29,7 @@ interface PaymentProps {
   driverId?: number;
   rideTime?: number;
   buttonClassName?: string;
-  onSuccess?: (orderId: string) => void;
+  onSuccess?: (orderId: string) => void | Promise<void>;
   onError?: (errorMessage: string) => void;
 }
 
@@ -49,6 +49,7 @@ const Payment = ({
   const [isWebViewLoading, setIsWebViewLoading] = useState<boolean>(true);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
+  const completedOrderIdsRef = useRef<Set<string>>(new Set());
 
   const handleCloseModal = useCallback(() => {
     setIsModalVisible(false);
@@ -56,10 +57,26 @@ const Payment = ({
   }, []);
 
   const handlePaymentCompleted = useCallback(
-    (orderId: string) => {
+    async (orderId: string) => {
+      if (completedOrderIdsRef.current.has(orderId)) return;
+
+      completedOrderIdsRef.current.add(orderId);
       handleCloseModal();
-      setPaymentSuccess(true);
-      onSuccess?.(orderId);
+      setIsLoading(true);
+
+      try {
+        await onSuccess?.(orderId);
+        setPaymentSuccess(true);
+      } catch (error) {
+        completedOrderIdsRef.current.delete(orderId);
+        console.warn("Unable to complete paid ride:", error);
+        Alert.alert(
+          "Pembayaran Berhasil, Pesanan Belum Tersimpan",
+          "Pembayaran sudah terkonfirmasi, tetapi kami belum berhasil menyimpan data perjalanan. Silakan coba lagi atau hubungi bantuan.",
+        );
+      } finally {
+        setIsLoading(false);
+      }
     },
     [handleCloseModal, onSuccess],
   );
@@ -78,15 +95,15 @@ const Payment = ({
       const statusResponse = await getPaymentStatus(orderId);
 
       if (statusResponse.status === "PAID") {
-        handlePaymentCompleted(orderId);
+        await handlePaymentCompleted(orderId);
       } else if (statusResponse.status === "PENDING") {
         Alert.alert(
           "Menunggu Pembayaran",
-          "Transaksi Anda sedang diproses. Silakan selesaikan pembayaran sesuai instruksi.",
+          "Transaksi belum terbayar atau masih diproses. Silakan selesaikan pembayaran terlebih dahulu.",
           [
             {
-              text: "Lihat Beranda",
-              onPress: () => router.replace("/(root)/(tabs)/home"),
+              text: "Tutup",
+              style: "cancel",
             },
             {
               text: "Cek Status Lagi",
@@ -163,7 +180,9 @@ const Payment = ({
       url.includes("transaction_status=capture") ||
       url.includes("status_code=200")
     ) {
-      handlePaymentCompleted(currentOrderId);
+      if (currentOrderId) {
+        void verifyOrderStatus(currentOrderId);
+      }
       return;
     }
 
@@ -176,8 +195,7 @@ const Payment = ({
       handleCloseModal();
       Alert.alert(
         "Menunggu Pembayaran",
-        "Pembayaran Anda sedang diproses. Cek detail pesanan Anda pada riwayat perjalanan.",
-        [{ text: "OK", onPress: () => router.replace("/(root)/(tabs)/home") }],
+        "Pembayaran Anda belum selesai. Pesanan baru akan dibuat setelah status pembayaran terkonfirmasi berhasil.",
       );
       return;
     }

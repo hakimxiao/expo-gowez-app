@@ -40,13 +40,6 @@ export const useLocationStore = create<LocationStore>((set) => ({
       destinationAddress: address,
     }));
   },
-  clearDestinationLocation: () => {
-    set(() => ({
-      destinationLatitude: null,
-      destinationLongitude: null,
-      destinationAddress: null,
-    }));
-  },
 }));
 
 export const useDriverStore = create<DriverStore>((set) => ({

@@ -113,6 +113,9 @@ export declare interface PaymentProps {
   customerEmail: string;
   driverId?: number;
   rideTime?: number;
+  buttonClassName?: string;
+  onSuccess?: (orderId: string) => void | Promise<void>;
+  onError?: (errorMessage: string) => void;
 }
 
 export declare interface LocationStore {
@@ -140,7 +143,6 @@ export declare interface LocationStore {
     longitude: number;
     address: string;
   }) => void;
-  clearDestinationLocation: () => void;
 }
 
 export declare interface DriverStore {

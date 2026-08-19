@@ -1,6 +1,7 @@
 import Payment from "@/components/Payment";
 import RideLayout from "@/components/RideLayout";
 import { icons } from "@/constants";
+import { fetchAPI } from "@/lib/fetch";
 import { getCurrentUserLocation } from "@/lib/location";
 import { formatCurrency, formatTime } from "@/lib/utils";
 import { useDriverStore, useLocationStore } from "@/store";
@@ -12,13 +13,21 @@ const BOOK_RIDE_SNAP_POINTS = ["58%", "82%"];
 
 const BookRide = () => {
   const { user } = useUser();
-  const { userAddress, destinationAddress, setUserLocation } =
-    useLocationStore();
+  const {
+    userAddress,
+    destinationAddress,
+    setUserLocation,
+    userLatitude,
+    userLongitude,
+    destinationLatitude,
+    destinationLongitude,
+  } = useLocationStore();
   const { drivers, selectedDriver } = useDriverStore();
 
   const driverDetails =
     drivers?.find((driver) => Number(driver.id) === selectedDriver) ||
     drivers?.[0];
+  const driverId = driverDetails?.id ? Number(driverDetails.id) : undefined;
 
   const parsedPrice = Number(driverDetails?.price ?? 0);
   const rideAmount =
@@ -32,12 +41,26 @@ const BookRide = () => {
   const customerEmail =
     user?.primaryEmailAddress?.emailAddress || "user@gowez.com";
 
-  const handlePaymentSuccess = (orderId: string) => {
-    // TODO: Simpan ride user setelah pembayaran sukses lewat POST "/(api)/ride/create".
-    // Payload yang dibutuhkan: origin/destination address, lat/lng, ride_time,
-    // fare_price, payment_status: "paid", driver_id, user_id, dan jika schema
-    // database sudah mendukung, simpan juga orderId sebagai payment_id.
+  const handlePaymentSuccess = async (orderId: string) => {
     console.log("[BookRide] Payment success, ready to create ride:", orderId);
+
+    await fetchAPI("/(api)/ride/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        origin_address: userAddress,
+        destination_address: destinationAddress,
+        origin_latitude: userLatitude,
+        origin_longitude: userLongitude,
+        destination_latitude: destinationLatitude,
+        destination_longitude: destinationLongitude,
+        ride_time: driverDetails?.time ?? 15,
+        fare_price: rideAmount,
+        payment_status: "paid",
+        driver_id: driverId,
+        user_id: user?.id,
+      }),
+    });
   };
 
   useEffect(() => {
@@ -162,7 +185,7 @@ const BookRide = () => {
           amount={rideAmount}
           customerName={customerName}
           customerEmail={customerEmail}
-          driverId={driverDetails?.id ? Number(driverDetails.id) : undefined}
+          driverId={driverId}
           rideTime={driverDetails?.time}
           buttonClassName="mt-6 mb-3"
           onSuccess={handlePaymentSuccess}
