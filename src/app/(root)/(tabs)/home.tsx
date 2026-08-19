@@ -6,8 +6,8 @@ import { icons, recentRides } from "@/constants";
 import { getCurrentUserLocation } from "@/lib/location";
 import { useLocationStore } from "@/store";
 import { useUser } from "@clerk/expo";
-import { router } from "expo-router";
-import { useEffect } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect } from "react";
 import {
   Alert,
   FlatList,
@@ -19,20 +19,32 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Home = () => {
-  const { setUserLocation, setDestinationLocation } = useLocationStore();
+  const {
+    setUserLocation,
+    setDestinationLocation,
+    clearDestinationLocation,
+  } = useLocationStore();
 
   const { user } = useUser();
   const loading = false;
 
-  const handleSignOut = () => {
+  const handleSignOut = () => {};
 
-  };
-
-  const handleDestinationPress = (location: {latitude: number, longitude: number, address: string}) => {
+  const handleDestinationPress = (location: {
+    latitude: number;
+    longitude: number;
+    address: string;
+  }) => {
     setDestinationLocation(location);
 
-    router.push('/(root)/find-ride');
+    router.push("/(root)/find-ride");
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      clearDestinationLocation();
+    }, [clearDestinationLocation]),
+  );
 
   useEffect(() => {
     const requestLocation = async () => {

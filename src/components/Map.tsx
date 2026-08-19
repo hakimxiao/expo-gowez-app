@@ -18,8 +18,26 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
+import MapView, {
+  LatLng,
+  Marker,
+  Polyline,
+  PROVIDER_DEFAULT,
+} from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const OSRM_BASE_URL =
+  process.env.EXPO_PUBLIC_OSRM_BASE_URL ?? "https://router.project-osrm.org";
+
+type OsrmRouteResponse = {
+  code: string;
+  routes?: {
+    geometry?: {
+      coordinates?: [number, number][];
+    };
+  }[];
+  message?: string;
+};
 
 const Map = () => {
   const { data: drivers, loading, error } = useFetch<Driver[]>("/(api)/driver");
@@ -34,6 +52,7 @@ const Map = () => {
 
   const { selectedDriver, setDrivers } = useDriverStore();
   const [markers, setMarkers] = useState<MarkerData[]>([]);
+  const [routeCoordinates, setRouteCoordinates] = useState<LatLng[]>([]);
   const mapRef = useRef<MapView>(null);
   const insets = useSafeAreaInsets();
   const hasDestinationCoordinates =
@@ -127,6 +146,62 @@ const Map = () => {
     mapRef.current?.animateToRegion(region, 500);
   }, [region]);
 
+  useEffect(() => {
+    if (
+      userLatitude === null ||
+      userLongitude === null ||
+      !hasDestinationCoordinates
+    ) {
+      setRouteCoordinates([]);
+      return;
+    }
+
+    const abortController = new AbortController();
+
+    const loadRoute = async () => {
+      try {
+        const coordinates = `${userLongitude},${userLatitude};${destinationLongitude},${destinationLatitude}`;
+        const url = `${OSRM_BASE_URL}/route/v1/driving/${coordinates}?overview=full&geometries=geojson`;
+        const response = await fetch(url, { signal: abortController.signal });
+
+        if (!response.ok) {
+          throw new Error(`OSRM request failed with status ${response.status}`);
+        }
+
+        const data = (await response.json()) as OsrmRouteResponse;
+        const geometry = data.routes?.[0]?.geometry?.coordinates;
+
+        if (data.code !== "Ok" || !geometry?.length) {
+          throw new Error(data.message ?? "OSRM route is not available.");
+        }
+
+        setRouteCoordinates(
+          geometry.map(([longitude, latitude]) => ({
+            latitude,
+            longitude,
+          })),
+        );
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") return;
+
+        console.warn("Unable to load OSRM route:", error);
+        setRouteCoordinates([]);
+      }
+    };
+
+    loadRoute();
+
+    return () => {
+      abortController.abort();
+    };
+  }, [
+    userLatitude,
+    userLongitude,
+    destinationLatitude,
+    destinationLongitude,
+    hasDestinationCoordinates,
+  ]);
+
   if (loading)
     return (
       <View className="flex justify-between items-center w-full">
@@ -182,6 +257,17 @@ const Map = () => {
             }}
             title="Destination"
             image={icons.pin}
+          />
+        )}
+
+        {routeCoordinates.length > 0 && (
+          <Polyline
+            coordinates={routeCoordinates}
+            lineCap="round"
+            lineJoin="round"
+            geodesic
+            strokeColor="#0286ff"
+            strokeWidth={4}
           />
         )}
       </MapView>

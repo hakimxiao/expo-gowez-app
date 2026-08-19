@@ -140,6 +140,7 @@ export declare interface LocationStore {
     longitude: number;
     address: string;
   }) => void;
+  clearDestinationLocation: () => void;
 }
 
 export declare interface DriverStore {
