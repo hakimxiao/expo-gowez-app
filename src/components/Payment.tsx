@@ -28,6 +28,7 @@ interface PaymentProps {
   customerEmail: string;
   driverId?: number;
   rideTime?: number;
+  buttonClassName?: string;
   onSuccess?: (orderId: string) => void;
   onError?: (errorMessage: string) => void;
 }
@@ -38,6 +39,7 @@ const Payment = ({
   customerEmail,
   driverId,
   rideTime,
+  buttonClassName = "my-10",
   onSuccess,
   onError,
 }: PaymentProps) => {
@@ -243,7 +245,7 @@ const Payment = ({
             ? "Memproses..."
             : `Bayar ${formatCurrency(amount || 45000)}`
         }
-        className="my-10"
+        className={buttonClassName}
         onPress={handleOpenPaymentSheet}
         disabled={isLoading}
       />

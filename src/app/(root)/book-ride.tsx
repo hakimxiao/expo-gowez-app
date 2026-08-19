@@ -8,6 +8,8 @@ import { useUser } from "@clerk/expo";
 import { useEffect } from "react";
 import { Alert, Image, Text, View } from "react-native";
 
+const BOOK_RIDE_SNAP_POINTS = ["58%", "82%"];
+
 const BookRide = () => {
   const { user } = useUser();
   const { userAddress, destinationAddress, setUserLocation } =
@@ -67,19 +69,23 @@ const BookRide = () => {
   }, [setUserLocation, userAddress]);
 
   return (
-    <RideLayout title="Book Ride" snapPoints={["70%", "92%"]}>
+    <RideLayout
+      title="Book Ride"
+      snapPoints={BOOK_RIDE_SNAP_POINTS}
+      bottomSheetIndex={0}
+    >
       <>
-        <Text className="text-xl font-JakartaSemiBold mb-3">
+        <Text className="text-xl font-JakartaSemiBold mb-2">
           Ride Information
         </Text>
 
-        <View className="flex flex-col w-full items-center justify-center mt-10">
+        <View className="flex flex-col w-full items-center justify-center mt-4">
           <Image
             source={{ uri: driverDetails?.profile_image_url }}
-            className="w-28 h-28 rounded-full"
+            className="w-24 h-24 rounded-full"
           />
 
-          <View className="flex flex-row items-center justify-center mt-5 space-x-2">
+          <View className="flex flex-row items-center justify-center mt-3 space-x-2">
             <Text className="text-lg font-JakartaSemiBold">
               {driverDetails?.title}
             </Text>
@@ -97,7 +103,7 @@ const BookRide = () => {
           </View>
         </View>
 
-        <View className="flex flex-col w-full items-start justify-center py-3 px-5 rounded-3xl bg-general-600 mt-5">
+        <View className="flex flex-col w-full items-start justify-center py-2 px-5 rounded-3xl bg-general-600 mt-4">
           <View className="flex flex-row items-center justify-between w-full border-b border-white py-3">
             <Text className="text-lg font-JakartaRegular">Ride Price</Text>
             <Text className="text-lg font-JakartaSemiBold text-[#0CC25F]">
@@ -120,7 +126,7 @@ const BookRide = () => {
           </View>
         </View>
 
-        <View className="flex w-full flex-col items-start justify-center mt-5 gap-y-3">
+        <View className="flex w-full flex-col items-start justify-center mt-4 gap-y-3">
           <View className="min-h-[76px] w-full flex-row items-start rounded-2xl bg-neutral-100 px-4 py-4">
             <Image source={icons.to} className="mt-1 h-6 w-6" />
             <View className="ml-3 flex-1">
@@ -158,6 +164,7 @@ const BookRide = () => {
           customerEmail={customerEmail}
           driverId={driverDetails?.id ? Number(driverDetails.id) : undefined}
           rideTime={driverDetails?.time}
+          buttonClassName="mt-6 mb-3"
           onSuccess={handlePaymentSuccess}
         />
       </>

@@ -1,11 +1,11 @@
 import { icons } from "@/constants";
 import { useFetch } from "@/lib/fetch";
+import { getCurrentUserLocation } from "@/lib/location";
 import {
   calculateDriverTimes,
   calculateRegion,
   generateMarkersFromData,
 } from "@/lib/map";
-import { getCurrentUserLocation } from "@/lib/location";
 import { useDriverStore, useLocationStore } from "@/store";
 import { Driver, MarkerData } from "@/types/type";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -36,6 +36,11 @@ const Map = () => {
   const [markers, setMarkers] = useState<MarkerData[]>([]);
   const mapRef = useRef<MapView>(null);
   const insets = useSafeAreaInsets();
+  const hasDestinationCoordinates =
+    destinationLatitude !== null &&
+    destinationLongitude !== null &&
+    Number.isFinite(destinationLatitude) &&
+    Number.isFinite(destinationLongitude);
 
   const region = useMemo(
     () =>
@@ -96,10 +101,7 @@ const Map = () => {
       markers.length > 0 &&
       userLatitude !== null &&
       userLongitude !== null &&
-      destinationLatitude !== undefined &&
-      destinationLatitude !== null &&
-      destinationLongitude !== undefined &&
-      destinationLongitude !== null
+      hasDestinationCoordinates
     ) {
       calculateDriverTimes({
         markers,
@@ -118,7 +120,12 @@ const Map = () => {
     userLongitude,
     destinationLatitude,
     destinationLongitude,
+    hasDestinationCoordinates,
   ]);
+
+  useEffect(() => {
+    mapRef.current?.animateToRegion(region, 500);
+  }, [region]);
 
   if (loading)
     return (
@@ -141,7 +148,6 @@ const Map = () => {
         provider={PROVIDER_DEFAULT}
         style={styles.map}
         initialRegion={region}
-        region={region}
         tintColor="black"
         mapType="standard"
         showsPointsOfInterests={false}
@@ -166,6 +172,18 @@ const Map = () => {
             }
           />
         ))}
+
+        {hasDestinationCoordinates && (
+          <Marker
+            key="destination"
+            coordinate={{
+              latitude: destinationLatitude,
+              longitude: destinationLongitude,
+            }}
+            title="Destination"
+            image={icons.pin}
+          />
+        )}
       </MapView>
 
       <TouchableOpacity

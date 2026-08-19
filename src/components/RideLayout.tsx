@@ -11,6 +11,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Map from "@/components/Map";
 import { icons } from "@/constants";
 
+const DEFAULT_SNAP_POINTS = ["50%", "85%"];
+
 const RideLayout = ({
   children,
   title,
@@ -26,6 +28,9 @@ const RideLayout = ({
 }) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const insets = useSafeAreaInsets();
+  const sheetSnapPoints = snapPoints ?? DEFAULT_SNAP_POINTS;
+  const initialIndex =
+    bottomSheetIndex ?? Math.min(1, sheetSnapPoints.length - 1);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -54,15 +59,16 @@ const RideLayout = ({
         <BottomSheet
           keyboardBehavior="extend"
           ref={bottomSheetRef}
-          snapPoints={snapPoints || ["50%", "85%"]}
-          index={bottomSheetIndex ?? Math.min(1, (snapPoints?.length ?? 2) - 1)}
+          snapPoints={sheetSnapPoints}
+          index={initialIndex}
+          animateOnMount={false}
           enablePanDownToClose={false}
         >
           {scrollable ? (
             <BottomSheetScrollView
               contentContainerStyle={{
                 padding: 20,
-                paddingBottom: 60 + insets.bottom,
+                paddingBottom: 28 + insets.bottom,
               }}
               showsVerticalScrollIndicator={false}
             >
