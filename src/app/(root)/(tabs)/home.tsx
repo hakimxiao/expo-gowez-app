@@ -2,10 +2,12 @@ import EmptyRecentRidesList from "@/components/home/EmptyRecentRidesList";
 import PlacesTextInput from "@/components/home/PlacesTextInput";
 import RideCard from "@/components/home/RideCard";
 import Map from "@/components/Map";
-import { icons, recentRides } from "@/constants";
+import { icons } from "@/constants";
+import { useFetch } from "@/lib/fetch";
 import { getCurrentUserLocation } from "@/lib/location";
 import { useLocationStore } from "@/store";
-import { useUser } from "@clerk/expo";
+import { Ride } from "@/types/type";
+import { useAuth, useUser } from "@clerk/expo";
 import { router } from "expo-router";
 import { useEffect } from "react";
 import {
@@ -22,9 +24,16 @@ const Home = () => {
   const { setUserLocation, setDestinationLocation } = useLocationStore();
 
   const { user } = useUser();
-  const loading = false;
+  const { signOut } = useAuth();
+  const { data: recentRides, loading } = useFetch<Ride[]>(
+    `/(api)/ride/${user?.id}`,
+  );
 
-  const handleSignOut = () => {};
+  const handleSignOut = () => {
+    signOut();
+
+    router.replace("/(auth)/sign-in");
+  };
 
   const handleDestinationPress = (location: {
     latitude: number;
@@ -57,7 +66,7 @@ const Home = () => {
   return (
     <SafeAreaView className="bg-general-500">
       <FlatList
-        data={recentRides.slice(0, 5)}
+        data={recentRides?.slice(0, 5)}
         renderItem={({ item }) => <RideCard ride={item} />}
         className="px-5"
         keyboardShouldPersistTaps="handled"
