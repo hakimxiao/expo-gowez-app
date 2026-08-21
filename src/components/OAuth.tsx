@@ -14,13 +14,16 @@ const OAuth = () => {
       const result = await googleOAuth(startOAuthFlow);
 
       if (result.code === "session_exists" || result.code === "success") {
-        Alert.alert("Success", "Session Exists. Redirecting to home page");
-        router.push("/(root)/(tabs)/home");
+        router.replace("/(root)/(tabs)/home");
+        return;
       }
+
+      Alert.alert("Google Sign In Failed", result.message);
     } catch (error) {
       console.error("OAuth error", error);
+      Alert.alert("Google Sign In Failed", "Please try again.");
     }
-  }, []);
+  }, [startOAuthFlow]);
 
   return (
     <View>
