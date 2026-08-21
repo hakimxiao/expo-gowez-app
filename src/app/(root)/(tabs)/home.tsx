@@ -71,7 +71,7 @@ const Home = () => {
         className="px-5"
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 100 }}
-        ListEmptyComponent={() => <EmptyRecentRidesList isLoading={true} />}
+        ListEmptyComponent={() => <EmptyRecentRidesList isLoading={loading} />}
         ListHeaderComponent={() => (
           <>
             <View className="flex flex-row items-center justify-between my-5">
